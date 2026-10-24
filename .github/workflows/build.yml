@@ -4,6 +4,14 @@ on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      jar_path:
+        description: 'Путь к исходному jar (необязательно). Пусто = авто-поиск.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
 
 jobs:
   unpack:
@@ -12,6 +20,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -25,16 +35,26 @@ jobs:
         run: |
           set -euo pipefail
 
-          JAR="$(find . -type f -name '*.jar' ! -path './.git/*' ! -path './unpacked/*' -print -quit)"
+          INPUT_JAR="${{ github.event.inputs.jar_path }}"
 
-          if [ -z "$JAR" ]; then
-            echo "::error::No .jar file found in repository"
+          if [ -n "$INPUT_JAR" ]; then
+            JAR="$INPUT_JAR"
+          else
+            JAR="$(find . -type f -name '*.jar' \
+              ! -path './.git/*' \
+              ! -path './unpacked/*' \
+              ! -path './mod.jar' \
+              -print -quit)"
+          fi
+
+          if [ -z "$JAR" ] || [ ! -f "$JAR" ]; then
+            echo "::error::Исходный jar не найден. Положи .jar в репозиторий или укажи jar_path вручную."
             exit 1
           fi
 
           JAR_ABS="$(realpath "$JAR")"
           echo "jar_abs=$JAR_ABS" >> "$GITHUB_OUTPUT"
-          echo "Found jar: $JAR_ABS"
+          echo "Source jar: $JAR_ABS"
 
       - name: Unpack jar into repository
         shell: bash
@@ -69,7 +89,25 @@ jobs:
           cd ..
           ls -lh mod.jar
 
-      - name: Upload unpacked files, paths and repacked jar
+      - name: Commit and push unpacked files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -f unpacked paths.txt mod.jar
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "Unpack and repack mod jar [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: unpacked-cheat
