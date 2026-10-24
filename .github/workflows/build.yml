@@ -24,9 +24,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build/unpacked build/output
 
-          JAR="$(find . -type f -name '*.jar' ! -path './.git/*' ! -path './build/*' -print -quit)"
+          JAR="$(find . -type f -name '*.jar' ! -path './.git/*' ! -path './unpacked/*' -print -quit)"
 
           if [ -z "$JAR" ]; then
             echo "::error::No .jar file found in repository"
@@ -37,44 +36,44 @@ jobs:
           echo "jar_abs=$JAR_ABS" >> "$GITHUB_OUTPUT"
           echo "Found jar: $JAR_ABS"
 
-      - name: Unpack jar
+      - name: Unpack jar into repository
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf build/unpacked
-          mkdir -p build/unpacked
 
-          cd build/unpacked
+          rm -rf unpacked
+          mkdir -p unpacked
+
+          cd unpacked
           jar xf "${{ steps.findjar.outputs.jar_abs }}"
 
       - name: List all extracted paths
         shell: bash
         run: |
           set -euo pipefail
-          find build/unpacked -print | sort | tee build/paths.txt
+          find unpacked -print | sort | tee paths.txt
 
       - name: Repack into mod.jar
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build/output
 
-          cd build/unpacked
+          cd unpacked
 
           if [ -f META-INF/MANIFEST.MF ]; then
-            jar cfm ../output/mod.jar META-INF/MANIFEST.MF .
+            jar cfm ../mod.jar META-INF/MANIFEST.MF .
           else
-            jar cf ../output/mod.jar .
+            jar cf ../mod.jar .
           fi
 
-          echo "Repacked:"
-          ls -lh ../output/mod.jar
+          cd ..
+          ls -lh mod.jar
 
-      - name: Upload unpacked files and repacked jar
+      - name: Upload unpacked files, paths and repacked jar
         uses: actions/upload-artifact@v4
         with:
           name: unpacked-cheat
           path: |
-            build/unpacked
-            build/paths.txt
-            build/output/mod.jar
+            unpacked
+            paths.txt
+            mod.jar
