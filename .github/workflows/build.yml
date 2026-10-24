@@ -1,0 +1,80 @@
+name: Unpack And Repack Mod Jar
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Find jar file
+        id: findjar
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/unpacked build/output
+
+          JAR="$(find . -type f -name '*.jar' ! -path './.git/*' ! -path './build/*' -print -quit)"
+
+          if [ -z "$JAR" ]; then
+            echo "::error::No .jar file found in repository"
+            exit 1
+          fi
+
+          JAR_ABS="$(realpath "$JAR")"
+          echo "jar_abs=$JAR_ABS" >> "$GITHUB_OUTPUT"
+          echo "Found jar: $JAR_ABS"
+
+      - name: Unpack jar
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build/unpacked
+          mkdir -p build/unpacked
+
+          cd build/unpacked
+          jar xf "${{ steps.findjar.outputs.jar_abs }}"
+
+      - name: List all extracted paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          find build/unpacked -print | sort | tee build/paths.txt
+
+      - name: Repack into mod.jar
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/output
+
+          cd build/unpacked
+
+          if [ -f META-INF/MANIFEST.MF ]; then
+            jar cfm ../output/mod.jar META-INF/MANIFEST.MF .
+          else
+            jar cf ../output/mod.jar .
+          fi
+
+          echo "Repacked:"
+          ls -lh ../output/mod.jar
+
+      - name: Upload unpacked files and repacked jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: unpacked-cheat
+          path: |
+            build/unpacked
+            build/paths.txt
+            build/output/mod.jar
