@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "ru.fthelper.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ModuleClassMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "vertex": "volon:core/kawase_down/kawase_down",
+  "fragment": "volon:core/aurora/aurora_sky",
+  "samplers": [
+    { "name": "Sampler0" }
+  ],
+  "uniforms": [
+    { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0] },
+    { "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0] },
+    { "name": "texelSize", "type": "float", "count": 2, "values": [0.001, 0.001] },
+    { "name": "color", "type": "float", "count": 3, "values": [0.2, 0.8, 0.6] },
+    { "name": "color2", "type": "float", "count": 3, "values": [0.6, 0.3, 0.9] },
+    { "name": "time", "type": "float", "count": 1, "values": [0.0] },
+    { "name": "speed", "type": "float", "count": 1, "values": [0.8] },
+    { "name": "intensity", "type": "float", "count": 1, "values": [1.0] },
+    { "name": "scale", "type": "float", "count": 1, "values": [1.5] }
+  ]
+}

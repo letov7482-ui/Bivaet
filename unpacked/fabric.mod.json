@@ -1,0 +1,52 @@
+{
+    "schemaVersion": 1,
+    "id": "volon",
+    "version": "1.0.0",
+    "name": "MondayClientBeta",
+    "description": "MondayClientBeta",
+    "authors": [
+        "Monday Team"
+    ],
+    "contact": {
+        "homepage": "https://fabricmc.net/",
+        "sources": "https://github.com/FabricMC/fabric-example-mod"
+    },
+    "license": "CC0-1.0",
+    "icon": "assets/volon/icon.png",
+    "environment": "*",
+    "jars": [
+        {
+            "file": "META-INF/jars/baritone-standalone-fabric-1.13.1.jar"
+        },
+        {
+            "file": "META-INF/jars/IAS-9.0.7-1.21.4-fabric.jar"
+        }
+    ],
+    "entrypoints": {
+        "main": [
+            {
+                "adapter": "protected",
+                "value": "fun.volon.Volon::INSTANCE"
+            }
+        ],
+        "preLaunch": [
+            "protectedrt.ProtectedPreLaunch"
+        ],
+        "client": [
+            "ru.fthelper.FtHelperClient"
+        ]
+    },
+    "mixins": [
+        "volon.mixins.json",
+        "fthelper.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.18.4",
+        "minecraft": "~1.21.4",
+        "java": ">=21",
+        "fabric-api": "*"
+    },
+    "languageAdapters": {
+        "protected": "protectedrt.ProtectedLanguageAdapter"
+    }
+}
